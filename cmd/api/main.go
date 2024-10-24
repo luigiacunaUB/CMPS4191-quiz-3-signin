@@ -1,6 +1,6 @@
 // Luigi Acuna
 // CMPS4191 Quiz 3
-// main.go
+// main.go 1
 package main
 
 import (
