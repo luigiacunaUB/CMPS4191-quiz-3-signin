@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import(
+	"fmt"
+ 	"net/http"
+)
 
 func (a *applicationDependencies)logError(r *http.Request, err error){
 	method :=r.Method
@@ -34,8 +37,7 @@ func (a *applicationDependencies)methodNotAllowedResponse(w http.ResponseWriter,
 
 // we only log server errors, not client errors
 // prepare a formatted response to send to the client
-message := fmt.Sprintf("the %s method is not supported for this
-resource", r.Method)
+message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
 
 a.errorResponseJSON(w, r, http.StatusMethodNotAllowed, message)
 

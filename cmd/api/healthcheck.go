@@ -16,8 +16,9 @@ func (a *applicationDependencies) healthCheckHandler(w http.ResponseWriter, r *h
 	err := a.writeJSON(w, http.StatusOK, data, nil)
 	jsResponse, err := json.Marshal(data)
 	if err != nil {
-		a.logger.Error(err.Error())
-		http.Error(w, "The server encountered a problem and could not prcess your request", http.StatusInternalServerError)
+		//a.logger.Error(err.Error())
+		//http.Error(w, "The server encountered a problem and could not prcess your request", http.StatusInternalServerError)
+		a.serverErrorResponse(w, r, err)
 		return
 	}
 

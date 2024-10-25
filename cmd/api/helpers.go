@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type envelope map[string] any
+type envelope map[string]any
 
 func (a *applicationDependencies) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	jsResponse, err := json.MarshalIndent(data, "", "\t")

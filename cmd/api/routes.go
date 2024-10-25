@@ -13,10 +13,10 @@ func (a *applicationDependencies) routes() http.Handler {
 	router := httprouter.New()
 
 	//handle 404
-	//router.NotFound = http.HandlerFunc(a.notFoundResponse)
+	router.NotFound = http.HandlerFunc(a.notFoundResponse)
 
 	//handle 405
-	//router.MethodNotAllowed = http.HandlerFunc(a.MethodNotAllowed)
+	router.MethodNotAllowed = http.HandlerFunc(a.methodNotAllowedResponse)
 
 	//routes
 	router.HandlerFunc(http.MethodGet, "/", a.Index)
