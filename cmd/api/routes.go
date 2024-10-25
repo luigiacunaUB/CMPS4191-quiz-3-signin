@@ -21,6 +21,7 @@ func (a *applicationDependencies) routes() http.Handler {
 	//routes
 	router.HandlerFunc(http.MethodGet, "/", a.Index)
 	router.HandlerFunc(http.MethodGet, "/healthcheck", a.healthCheckHandler)
+	router.HandlerFunc(http.MethodPost,"/signin",a.createSignInHandler)
 
 	return a.recoverPanic(router)
 }
