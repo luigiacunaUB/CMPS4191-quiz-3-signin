@@ -12,6 +12,7 @@ func (a *applicationDependencies) createSignInHandler(w http.ResponseWriter, r *
 		Email    string `json:"email"`
 		FullName string `json:"fullname"`
 	}
+	//add something to commit to
 
 	//decoding done here
 	err := json.NewDecoder(r.Body).Decode(&incomingData)
