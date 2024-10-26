@@ -23,7 +23,8 @@ func (a *applicationDependencies) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/healthcheck", a.healthCheckHandler)
 	router.HandlerFunc(http.MethodPost, "/signin", a.createSignInHandler)           //Create
 	router.HandlerFunc(http.MethodGet, "/view-sign-in/:id", a.displaySignInHandler) //Post
-	router.HandlerFunc(http.MethodPatch, "/signin/:id", a.updateSigninHandler)
+	router.HandlerFunc(http.MethodPatch, "/signin/:id", a.updateSigninHandler)      //update
+	router.HandlerFunc(http.MethodDelete, "/signin/:id", a.deleteSigninHandler)     //delete
 
 	return a.recoverPanic(router)
 }

@@ -141,3 +141,28 @@ func (a *applicationDependencies) updateSigninHandler(w http.ResponseWriter, r *
 		return
 	}
 }
+
+func (a *applicationDependencies) deleteSigninHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := a.ReadIDParam(r)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+	err = a.SignINModel.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	data := envelope{
+		"message": "signin deleted successfully",
+	}
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
+}

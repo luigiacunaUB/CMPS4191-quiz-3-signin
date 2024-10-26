@@ -84,3 +84,30 @@ func (s SignINModel) Update(signin *SignIN) error {
 
 	return s.DB.QueryRowContext(ctx, query, args...).Scan(&signin.ID)
 }
+
+func (s SignINModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+	query := `
+		DELETE FROM users
+		WHERE id = $1
+		`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := s.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+	return nil
+}
