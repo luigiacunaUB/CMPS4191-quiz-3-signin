@@ -69,3 +69,18 @@ func (s SignINModel) Get(id int64) (*SignIN, error) {
 	}
 	return &signin, nil
 }
+
+func (s SignINModel) Update(signin *SignIN) error {
+	query := `
+	UPDATE users
+	SET email = $1 , fullname = $2
+	WHERE id = $3
+	RETURNING id
+	`
+	args := []any{signin.Email, signin.FullName, signin.ID}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return s.DB.QueryRowContext(ctx, query, args...).Scan(&signin.ID)
+}

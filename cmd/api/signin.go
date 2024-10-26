@@ -84,3 +84,60 @@ func (a *applicationDependencies) displaySignInHandler(w http.ResponseWriter, r 
 		return
 	}
 }
+
+func (a *applicationDependencies) updateSigninHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := a.ReadIDParam(r)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+	signin, err := a.SignINModel.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var incomingData struct {
+		Email    *string `json:"email"`
+		FullName *string `json:"fullname"`
+	}
+
+	err = a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	if incomingData.Email != nil {
+		signin.Email = *incomingData.Email
+	}
+
+	if incomingData.FullName != nil {
+		signin.FullName = *incomingData.FullName
+	}
+
+	v := validator.New()
+	data.ValidateSignin(v, signin)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+	}
+
+	err = a.SignINModel.Update(signin)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+	data := envelope{
+		"signin": signin,
+	}
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
