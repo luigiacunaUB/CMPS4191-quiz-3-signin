@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/luigiacunaUB/CMPS4191-quiz-3-signin/internal/validator"
@@ -14,10 +15,10 @@ type SignINModel struct {
 
 // the database table
 type SignIN struct {
-	ID        int64     `json:"id"`
-	Email     string    `json:"email"`
-	FullName  string    `json: "fullname"`
-	LoginDate time.Time `json: "logindate"`
+	ID        int64  `json:"id"`
+	Email     string `json:"email"`
+	FullName  string `json: "fullname"`
+	LoginDate string `json:"logindate"`
 }
 
 func ValidateSignin(v *validator.Validator, signin *SignIN) {
@@ -31,7 +32,7 @@ func (s SignINModel) Insert(signin *SignIN) error {
 	query := `
 		INSERT INTO users (Email,FullName)
 		VALUES ($1,$2)
-		RETURNING ID,LoginDate
+		RETURNING ID
 	`
 
 	args := []any{signin.Email, signin.FullName}
@@ -39,5 +40,32 @@ func (s SignINModel) Insert(signin *SignIN) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return s.DB.QueryRowContext(ctx, query, args...).Scan(&signin.ID, &signin.LoginDate)
+	return s.DB.QueryRowContext(ctx, query, args...).Scan(&signin.ID)
+}
+
+func (s SignINModel) Get(id int64) (*SignIN, error) {
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+	query := `
+		SELECT id,email,fullname,logindate
+		FROM users
+		WHERE id = $1
+	`
+
+	var signin SignIN
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := s.DB.QueryRowContext(ctx, query, id).Scan(&signin.ID, &signin.Email, &signin.FullName, &signin.LoginDate)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &signin, nil
 }

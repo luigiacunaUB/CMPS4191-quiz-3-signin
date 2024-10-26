@@ -6,7 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
+	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type envelope map[string]any
@@ -79,4 +83,21 @@ func (a *applicationDependencies) readJSON(w http.ResponseWriter, r *http.Reques
 		return errors.New("the body must only contain a single JSON value")
 	}
 	return nil
+}
+
+func (a *applicationDependencies) ReadIDParam(r *http.Request) (int64, error) {
+	a.logger.Info("Inside ReadIDParam")
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
+	if err != nil || id < 1 {
+		a.logger.Info("invalid id parameter")
+		return 0, errors.New("invalid id parameter")
+	} else {
+
+		a.logger.Info("The type of myVar is", "%s\n", reflect.TypeOf(id))
+		a.logger.Info("Valid ID: ", "id", id)
+		//forcing the first entry for print regardless of input (testing)
+		//id = 1
+	}
+	return id, nil
 }
