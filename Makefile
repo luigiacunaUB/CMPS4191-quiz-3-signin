@@ -1,3 +1,4 @@
+include .envrc
 #run main application
 .PHONY: run/api
 run/api:
@@ -8,7 +9,7 @@ run/api:
 #enter database
 .PHONY: db/sql
 db/psql:
-	psql $(SIGNIN_DB_DSN) -U signin
+	psql $(SIGNIN_DB_DSN)
 
 #create migrations
 .PHONY: db/migrations/new
@@ -25,5 +26,5 @@ db/migrations/up:
 #down migrations
 .PHONY: db/migrations/down
 db/migrations/down:
-	@echo 'running up migrations'
+	@echo 'running down migrations'
 	migrate -path ./migrate -database $(SIGNIN_DB_DSN) down
