@@ -4,12 +4,16 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 const appVersion = "1.0.0"
@@ -17,6 +21,9 @@ const appVersion = "1.0.0"
 type serverConfig struct {
 	port       int    //port number to access signin page
 	enviroment string //enviroment the signin page will be on
+	db         struct {
+		dsn string
+	}
 }
 
 type applicationDependencies struct {
@@ -30,9 +37,20 @@ func main() {
 	//Settings ports and enviroment info
 	flag.IntVar(&settings.port, "port", 4000, "Server Port")
 	flag.StringVar(&settings.enviroment, "env", "development", "Enviroment(development|staging|)")
+	flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://signin:password123@localhost/signin?sslmode=disable", "PostgreSQL DSN")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	//Open connection
+	db, err := openDB(settings)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	//release db resources before closing
+	defer db.Close()
+	logger.Info("database connection before exiting")
 
 	appInstance := &applicationDependencies{
 		config: settings,
@@ -51,10 +69,30 @@ func main() {
 
 	logger.Info("starting server", "address", apiServer.Addr, "enviroment", settings.enviroment)
 
-	err := apiServer.ListenAndServe()
+	err = apiServer.ListenAndServe()
 
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+}
+
+func openDB(settings serverConfig) (*sql.DB, error) {
+	//open a connection pool
+	db, err := sql.Open("postgres", settings.db.dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	//set context to ensure DB ops dont take too long
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	//test
+	err = db.PingContext(ctx)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	return db, nil
 }
