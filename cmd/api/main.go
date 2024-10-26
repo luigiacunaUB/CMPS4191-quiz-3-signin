@@ -14,6 +14,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/luigiacunaUB/CMPS4191-quiz-3-signin/internal/data"
 )
 
 const appVersion = "1.0.0"
@@ -27,8 +28,9 @@ type serverConfig struct {
 }
 
 type applicationDependencies struct {
-	config serverConfig
-	logger *slog.Logger //look more into this later
+	config      serverConfig
+	logger      *slog.Logger //look more into this later
+	SignINModel data.SignINModel
 }
 
 func main() {
@@ -53,8 +55,9 @@ func main() {
 	logger.Info("database connection before exiting")
 
 	appInstance := &applicationDependencies{
-		config: settings,
-		logger: logger,
+		config:      settings,
+		logger:      logger,
+		SignINModel: data.SignINModel{DB: db},
 	}
 
 	//api server info

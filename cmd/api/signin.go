@@ -35,6 +35,23 @@ func (a *applicationDependencies) createSignInHandler(w http.ResponseWriter, r *
 		return
 	}
 
+	err = a.SignINModel.Insert(signin)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
 	//display result
-	fmt.Fprintf(w, "%+v\n", incomingData)
+	//fmt.Fprintf(w, "%+v\n", incomingData)
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/signin/%d", signin.ID))
+
+	data := envelope{
+		"signin": signin,
+	}
+	err = a.writeJSON(w, http.StatusCreated, data, headers)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
 }
